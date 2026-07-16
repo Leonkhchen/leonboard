@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LeonBoard</title>
+<style>
+  :root{
+    --bg:#0f1115; --panel:#181b22; --panel2:#1f232d; --border:#2a2f3a;
+    --text:#e8eaf0; --muted:#8b93a5; --accent:#7c6cf0; --accent2:#4cc9a8;
+    --danger:#e0596b; --warn:#e0b25a; --radius:14px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:"Segoe UI","Noto Sans TC",system-ui,sans-serif;min-height:100vh}
+  button{cursor:pointer;font-family:inherit}
+  input,select{font-family:inherit}
+
+  /* ===== lock screen ===== */
+  #lock{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:100}
+  .lock-card{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:36px;width:min(400px,92vw);text-align:center}
+  .lock-card h1{font-size:1.5rem;margin-bottom:6px}
+  .lock-card p{color:var(--muted);font-size:.9rem;margin-bottom:20px}
+  .lock-card input{width:100%;padding:12px;border-radius:10px;border:1px solid var(--border);background:var(--panel2);color:var(--text);font-size:1rem;margin-bottom:12px}
+  .lock-card button{width:100%;padding:12px;border-radius:10px;border:none;background:var(--accent);color:#fff;font-size:1rem;font-weight:600}
+  .lock-card .alt{background:transparent;border:1px solid var(--border);color:var(--muted);margin-top:10px;font-weight:400;font-size:.88rem}
+  .lock-err{color:var(--danger);font-size:.85rem;min-height:1.2em;margin-bottom:8px}
+  .hidden{display:none!important}
+
+  /* ===== layout ===== */
+  header{display:flex;align-items:center;justify-content:space-between;padding:18px 24px;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:10px}
+  header h1{font-size:1.25rem;letter-spacing:.5px}
+  header h1 span{color:var(--accent)}
+  .hbtns{display:flex;gap:8px;flex-wrap:wrap}
+  .hbtns button{background:var(--panel2);border:1px solid var(--border);color:var(--text);padding:8px 14px;border-radius:10px;font-size:.85rem}
+  .hbtns button:hover{border-color:var(--accent)}
+  #syncmsg{font-size:.8rem;color:var(--muted);width:100%;text-align:right}
+  main{display:grid;grid-template-columns:1fr 1fr;gap:18px;padding:20px 24px;max-width:1200px;margin:0 auto}
+  @media(max-width:820px){main{grid-template-columns:1fr}}
+  section{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:18px;display:flex;flex-direction:column;gap:12px}
+  section h2{font-size:1.02rem;display:flex;align-items:center;gap:8px}
+  .count{color:var(--muted);font-size:.8rem;font-weight:400}
+
+  /* ===== todos ===== */
+  .tabs{display:flex;gap:6px}
+  .tabs button{flex:1;padding:8px;border-radius:10px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:.9rem}
+  .tabs button.on{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
+  .addrow{display:flex;gap:8px}
+  .addrow input{flex:1;padding:10px;border-radius:10px;border:1px solid var(--border);background:var(--panel2);color:var(--text)}
+  .addrow button{padding:10px 16px;border-radius:10px;border:none;background:var(--accent2);color:#08281f;font-weight:700}
+  ul.list{list-style:none;display:flex;flex-direction:column;gap:8px;max-height:320px;overflow-y:auto}
+  li.todo{display:flex;align-items:center;gap:10px;background:var(--panel2);border:1px solid var(--border);border-radius:10px;padding:10px 12px}
+  li.todo input[type=checkbox]{width:18px;height:18px;accent-color:var(--accent2);flex-shrink:0}
+  li.todo .txt{flex:1;font-size:.93rem;word-break:break-all}
+  li.todo.done .txt{text-decoration:line-through;color:var(--muted)}
+  .del{background:transparent;border:none;color:var(--muted);font-size:1rem;padding:2px 6px}
+  .del:hover{color:var(--danger)}
+
+  /* ===== progress ===== */
+  .prog{background:var(--panel2);border:1px solid var(--border);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:8px}
+  .prog .top{display:flex;align-items:center;gap:8px}
+  .prog .name{flex:1;font-size:.93rem;font-weight:600}
+  .prog .pct{color:var(--accent2);font-size:.9rem;font-weight:700;min-width:44px;text-align:right}
+  .bar{height:8px;background:var(--bg);border-radius:99px;overflow:hidden}
+  .bar>div{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:99px;transition:width .3s}
+  .prog input[type=range]{width:100%;accent-color:var(--accent)}
+
+  /* ===== links (apps & favs) ===== */
+  .links{display:flex;flex-direction:column;gap:8px;max-height:340px;overflow-y:auto}
+  .link{display:flex;align-items:center;gap:10px;background:var(--panel2);border:1px solid var(--border);border-radius:10px;padding:10px 12px;text-decoration:none;color:var(--text)}
+  .link:hover{border-color:var(--accent)}
+  .link .ico{font-size:1.2rem}
+  .link .meta{flex:1;min-width:0}
+  .link .nm{font-size:.93rem;font-weight:600}
+  .link .url{font-size:.75rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .ghost{background:transparent;border:1px dashed var(--border);color:var(--muted);padding:9px;border-radius:10px;font-size:.85rem}
+  .ghost:hover{border-color:var(--accent);color:var(--text)}
+
+  /* ===== modal ===== */
+  #modal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;z-index:90}
+  .mcard{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:24px;width:min(430px,92vw);display:flex;flex-direction:column;gap:10px}
+  .mcard h3{font-size:1.05rem;margin-bottom:4px}
+  .mcard label{font-size:.8rem;color:var(--muted)}
+  .mcard input{padding:10px;border-radius:10px;border:1px solid var(--border);background:var(--panel2);color:var(--text)}
+  .mrow{display:flex;gap:8px;margin-top:8px}
+  .mrow button{flex:1;padding:10px;border-radius:10px;border:none;font-weight:600}
+  .mok{background:var(--accent);color:#fff}
+  .mcancel{background:var(--panel2);color:var(--muted);border:1px solid var(--border)!important}
+  .mnote{font-size:.78rem;color:var(--muted);line-height:1.5}
+  footer{text-align:center;color:var(--muted);font-size:.75rem;padding:14px}
+</style>
+</head>
+<body>
+
+<!-- ======== LOCK SCREEN ======== -->
+<div id="lock">
+  <div class="lock-card">
+    <h1>🔐 Leon<span style="color:var(--accent)">Board</span></h1>
+    <p id="lockhint">輸入密碼以解鎖</p>
+    <div class="lock-err" id="lockerr"></div>
+    <input type="password" id="pw" placeholder="密碼" autofocus>
+    <input type="password" id="pw2" placeholder="再輸入一次密碼" class="hidden">
+    <button id="unlockbtn">解鎖</button>
+    <button class="alt" id="restorebtn">第一次用這台裝置?從 GitHub 還原</button>
+  </div>
+</div>
+
+<!-- ======== APP ======== -->
+<div id="app" class="hidden">
+<header>
+  <h1>Leon<span>Board</span></h1>
+  <div class="hbtns">
+    <button id="backupbtn">☁ 備份到 GitHub</button>
+    <button id="pullbtn">⬇ 從 GitHub 還原</button>
+    <button id="exportbtn">💾 匯出</button>
+    <button id="importbtn">📂 匯入</button>
+    <button id="setbtn">⚙ 設定</button>
+    <button id="lockbtn">🔒 鎖定</button>
+  </div>
+  <div id="syncmsg"></div>
+</header>
+
+<main>
+  <!-- todos -->
+  <section>
+    <h2>📋 待辦事項 <span class="count" id="todocount"></span></h2>
+    <div class="tabs">
+      <button data-cat="home" class="on">🏠 家庭</button>
+      <button data-cat="work">💼 工作</button>
+    </div>
+    <div class="addrow">
+      <input id="todoin" placeholder="新增待辦,按 Enter…">
+      <button id="todoadd">新增</button>
+    </div>
+    <ul class="list" id="todolist"></ul>
+  </section>
+
+  <!-- progress -->
+  <section>
+    <h2>📊 進度追蹤</h2>
+    <div class="links" id="proglist"></div>
+    <button class="ghost" id="progadd">＋ 新增追蹤項目</button>
+  </section>
+
+  <!-- apps -->
+  <section>
+    <h2>🚀 我的應用</h2>
+    <div class="links" id="applist"></div>
+    <button class="ghost" id="appadd">＋ 新增應用</button>
+  </section>
+
+  <!-- favorites -->
+  <section>
+    <h2>⭐ 我的最愛</h2>
+    <div class="links" id="favlist"></div>
+    <button class="ghost" id="favadd">＋ 新增最愛</button>
+  </section>
+</main>
+<footer>LeonBoard — 資料以你的密碼加密,存於本機並可備份至 GitHub</footer>
+</div>
+
+<!-- ======== MODAL ======== -->
+<div id="modal" class="hidden"><div class="mcard" id="mbody"></div></div>
+
+<script>
+/* ================= crypto helpers ================= */
+const enc = new TextEncoder(), dec = new TextDecoder();
+const b64 = a => btoa(String.fromCharCode(...new Uint8Array(a)));
+const unb64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+
+async function deriveKey(pw, salt){
+  const base = await crypto.subtle.importKey("raw", enc.encode(pw), "PBKDF2", false, ["deriveKey"]);
+  return crypto.subtle.deriveKey({name:"PBKDF2", salt, iterations:150000, hash:"SHA-256"},
+    base, {name:"AES-GCM", length:256}, false, ["encrypt","decrypt"]);
+}
+async function encryptData(obj, pw, saltB64){
+  const salt = saltB64 ? unb64(saltB64) : crypto.getRandomValues(new Uint8Array(16));
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const key = await deriveKey(pw, salt);
+  const ct = await crypto.subtle.encrypt({name:"AES-GCM", iv}, key, enc.encode(JSON.stringify(obj)));
+  return {v:1, salt:b64(salt), iv:b64(iv), ct:b64(ct)};
+}
+async function decryptData(blob, pw){
+  const key = await deriveKey(pw, unb64(blob.salt));
+  const pt = await crypto.subtle.decrypt({name:"AES-GCM", iv:unb64(blob.iv)}, key, unb64(blob.ct));
+  return JSON.parse(dec.decode(pt));
+}
+
+/* ================= state ================= */
+const LS_KEY = "leonboard_blob";
+let password = null, state = null, curCat = "home", saltCache = null;
+
+const defaultState = () => ({
+  todos: [],
+  progress: [{id:id(), name:"範例:某專案", pct:30}],
+  apps: [
+    {id:id(), icon:"🤖", name:"Hermes Agent(Telegram 小赫)", url:"https://t.me/hermas01bot"},
+    {id:id(), icon:"📖", name:"EPUB 翻譯器", url:"https://epub-translator-jkt.zeabur.app"},
+    {id:id(), icon:"📄", name:"EPUB / PDF 轉換器", url:"https://epub-converter-jkt.zeabur.app"},
+    {id:id(), icon:"🧋", name:"珍奶 POS 系統", url:"https://bubble-tea-pos-jkt.zeabur.app"},
+    {id:id(), icon:"⚙️", name:"n8n 自動化", url:"https://n8n-leon-jkt.zeabur.app"}
+  ],
+  favs: [
+    {id:id(), icon:"▲", name:"Zeabur 控制台", url:"https://zeabur.com/projects"},
+    {id:id(), icon:"🐙", name:"GitHub", url:"https://github.com"}
+  ],
+  gh: {repo:"", token:""}   // github backup config (encrypted with everything else)
+});
+function id(){ return Math.random().toString(36).slice(2,9); }
+
+/* ================= persistence ================= */
+async function save(){
+  const blob = await encryptData(state, password, saltCache);
+  saltCache = blob.salt;
+  localStorage.setItem(LS_KEY, JSON.stringify(blob));
+}
+function msg(t, ok=true){
+  const el = document.getElementById("syncmsg");
+  el.textContent = t; el.style.color = ok ? "var(--accent2)" : "var(--danger)";
+  if(t) setTimeout(()=>{ if(el.textContent===t) el.textContent=""; }, 5000);
+}
+
+/* ================= lock flow ================= */
+const $ = s => document.querySelector(s);
+const lockErr = t => $("#lockerr").textContent = t;
+
+function initLock(){
+  const has = !!localStorage.getItem(LS_KEY);
+  if(!has){
+    $("#lockhint").textContent = "第一次使用:設定一組密碼(忘記無法救回,請記好)";
+    $("#pw2").classList.remove("hidden");
+    $("#unlockbtn").textContent = "建立";
+  }
+  $("#unlockbtn").onclick = unlock;
+  $("#pw").onkeydown = e => { if(e.key==="Enter") ($("#pw2").classList.contains("hidden") ? unlock() : $("#pw2").focus()); };
+  $("#pw2").onkeydown = e => { if(e.key==="Enter") unlock(); };
+  $("#restorebtn").onclick = restoreFirstTime;
+}
+async function unlock(){
+  const pw = $("#pw").value;
+  if(!pw) return lockErr("請輸入密碼");
+  const raw = localStorage.getItem(LS_KEY);
+  if(!raw){
+    if(pw !== $("#pw2").value) return lockErr("兩次密碼不一致");
+    if(pw.length < 4) return lockErr("密碼至少 4 碼");
+    password = pw; state = defaultState();
+    await save(); enter();
+  }else{
+    try{
+      const blob = JSON.parse(raw);
+      state = await decryptData(blob, pw);
+      password = pw; saltCache = blob.salt;
+      enter();
+    }catch(e){ lockErr("密碼錯誤"); }
+  }
+}
+function enter(){
+  $("#lock").classList.add("hidden");
+  $("#app").classList.remove("hidden");
+  renderAll();
+}
+function lockNow(){
+  password = null; state = null;
+  location.reload();
+}
+
+/* first-time restore from github */
+function restoreFirstTime(){
+  openModal(`
+    <h3>⬇ 從 GitHub 還原</h3>
+    <label>Repo(如 Leonkhchen/leonboard)</label><input id="m_repo" placeholder="owner/repo">
+    <label>GitHub Token(fine-grained,只需此 repo 的 Contents 讀寫)</label><input id="m_token" type="password">
+    <label>你的密碼(用來解密資料)</label><input id="m_pw" type="password">
+    <div class="mnote">會抓取 repo 裡的 data.json 並用密碼解密。</div>
+    <div class="mrow"><button class="mcancel" onclick="closeModal()">取消</button><button class="mok" id="m_go">還原</button></div>
+  `);
+  $("#m_go").onclick = async ()=>{
+    const repo=$("#m_repo").value.trim(), token=$("#m_token").value.trim(), pw=$("#m_pw").value;
+    if(!repo||!token||!pw) return;
+    try{
+      const blob = await ghGetData(repo, token);
+      state = await decryptData(blob, pw);
+      password = pw; saltCache = blob.salt;
+      state.gh = {repo, token};
+      await save(); closeModal(); enter(); msg("已從 GitHub 還原 ✓");
+    }catch(e){ alert("還原失敗:" + e.message); }
+  };
+}
+
+/* ================= github sync ================= */
+async function ghGetData(repo, token){
+  const r = await fetch(`https://api.github.com/repos/${repo}/contents/data.json`, {
+    headers:{Authorization:`Bearer ${token}`, Accept:"application/vnd.github+json"}});
+  if(!r.ok) throw new Error(`讀取失敗 (${r.status})——確認 repo/token 正確`);
+  const j = await r.json();
+  return JSON.parse(dec.decode(unb64(j.content.replace(/\n/g,""))));
+}
+async function ghBackup(){
+  const {repo, token} = state.gh || {};
+  if(!repo || !token){ openSettings(); return msg("請先在設定填 GitHub repo 與 token", false); }
+  msg("備份中…");
+  try{
+    const blob = await encryptData(state, password, saltCache);
+    const body = {message:"backup " + new Date().toISOString(), content: btoa(unescape(encodeURIComponent(JSON.stringify(blob))))};
+    // need existing sha if file exists
+    const head = await fetch(`https://api.github.com/repos/${repo}/contents/data.json`, {
+      headers:{Authorization:`Bearer ${token}`, Accept:"application/vnd.github+json"}});
+    if(head.ok){ body.sha = (await head.json()).sha; }
+    const r = await fetch(`https://api.github.com/repos/${repo}/contents/data.json`, {
+      method:"PUT", headers:{Authorization:`Bearer ${token}`, Accept:"application/vnd.github+json"},
+      body: JSON.stringify(body)});
+    if(!r.ok) throw new Error("HTTP " + r.status);
+    msg("已備份到 GitHub ✓");
+  }catch(e){ msg("備份失敗:" + e.message, false); }
+}
+async function ghPull(){
+  const {repo, token} = state.gh || {};
+  if(!repo || !token){ openSettings(); return msg("請先在設定填 GitHub repo 與 token", false); }
+  if(!confirm("將以 GitHub 上的備份覆蓋目前資料,確定?")) return;
+  try{
+    const blob = await ghGetData(repo, token);
+    const restored = await decryptData(blob, password);
+    restored.gh = state.gh;   // keep local token config
+    state = restored; saltCache = blob.salt;
+    await save(); renderAll(); msg("已從 GitHub 還原 ✓");
+  }catch(e){ msg("還原失敗:" + e.message, false); }
+}
+
+/* ================= export / import ================= */
+function exportFile(){
+  const blob = new Blob([localStorage.getItem(LS_KEY)], {type:"application/json"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "leonboard-backup-" + new Date().toISOString().slice(0,10) + ".json";
+  a.click();
+}
+function importFile(){
+  const inp = document.createElement("input");
+  inp.type = "file"; inp.accept = ".json";
+  inp.onchange = async ()=>{
+    try{
+      const txt = await inp.files[0].text();
+      const blob = JSON.parse(txt);
+      const restored = await decryptData(blob, password);  // must decrypt with current pw
+      state = restored; saltCache = blob.salt;
+      await save(); renderAll(); msg("匯入成功 ✓");
+    }catch(e){ alert("匯入失敗:檔案或密碼不符"); }
+  };
+  inp.click();
+}
+
+/* ================= render ================= */
+function renderAll(){ renderTodos(); renderProg(); renderLinks("apps","applist"); renderLinks("favs","favlist"); }
+
+function renderTodos(){
+  const ul = $("#todolist"); ul.innerHTML = "";
+  const items = state.todos.filter(t => t.cat === curCat);
+  const undone = items.filter(t=>!t.done).length;
+  $("#todocount").textContent = `(${undone} 未完成)`;
+  items.sort((a,b)=> (a.done - b.done) || (b.at - a.at));
+  for(const t of items){
+    const li = document.createElement("li");
+    li.className = "todo" + (t.done ? " done" : "");
+    li.innerHTML = `<input type="checkbox" ${t.done?"checked":""}><span class="txt"></span><button class="del">✕</button>`;
+    li.querySelector(".txt").textContent = t.text;
+    li.querySelector("input").onchange = e => { t.done = e.target.checked; save(); renderTodos(); };
+    li.querySelector(".del").onclick = () => { state.todos = state.todos.filter(x=>x.id!==t.id); save(); renderTodos(); };
+    ul.appendChild(li);
+  }
+}
+function addTodo(){
+  const v = $("#todoin").value.trim();
+  if(!v) return;
+  state.todos.push({id:id(), text:v, cat:curCat, done:false, at:Date.now()});
+  $("#todoin").value = ""; save(); renderTodos();
+}
+
+function renderProg(){
+  const box = $("#proglist"); box.innerHTML = "";
+  for(const p of state.progress){
+    const d = document.createElement("div");
+    d.className = "prog";
+    d.innerHTML = `<div class="top"><span class="name"></span><span class="pct">${p.pct}%</span><button class="del">✕</button></div>
+      <div class="bar"><div style="width:${p.pct}%"></div></div>
+      <input type="range" min="0" max="100" value="${p.pct}">`;
+    d.querySelector(".name").textContent = p.name;
+    d.querySelector("input").oninput = e => { p.pct = +e.target.value; d.querySelector(".pct").textContent = p.pct + "%"; d.querySelector(".bar>div").style.width = p.pct + "%"; };
+    d.querySelector("input").onchange = () => save();
+    d.querySelector(".del").onclick = () => { state.progress = state.progress.filter(x=>x.id!==p.id); save(); renderProg(); };
+    box.appendChild(d);
+  }
+}
+
+function renderLinks(key, elid){
+  const box = document.getElementById(elid); box.innerHTML = "";
+  for(const l of state[key]){
+    const a = document.createElement("a");
+    a.className = "link"; a.href = l.url; a.target = "_blank"; a.rel = "noopener";
+    a.innerHTML = `<span class="ico"></span><span class="meta"><div class="nm"></div><div class="url"></div></span><button class="del">✕</button>`;
+    a.querySelector(".ico").textContent = l.icon || "🔗";
+    a.querySelector(".nm").textContent = l.name;
+    a.querySelector(".url").textContent = l.url.replace(/^https?:\/\//,"");
+    a.querySelector(".del").onclick = e => { e.preventDefault(); state[key] = state[key].filter(x=>x.id!==l.id); save(); renderLinks(key, elid); };
+    box.appendChild(a);
+  }
+}
+
+/* ================= modal ================= */
+function openModal(html){ $("#mbody").innerHTML = html; $("#modal").classList.remove("hidden"); }
+function closeModal(){ $("#modal").classList.add("hidden"); }
+$("#modal").addEventListener("click", e => { if(e.target.id==="modal") closeModal(); });
+
+function addLinkModal(key, elid, title){
+  openModal(`
+    <h3>${title}</h3>
+    <label>圖示(emoji,可空)</label><input id="m_icon" placeholder="🔗">
+    <label>名稱</label><input id="m_name">
+    <label>網址</label><input id="m_url" placeholder="https://…">
+    <div class="mrow"><button class="mcancel" onclick="closeModal()">取消</button><button class="mok" id="m_go">新增</button></div>
+  `);
+  $("#m_name").focus();
+  $("#m_go").onclick = ()=>{
+    const name=$("#m_name").value.trim(), url=$("#m_url").value.trim();
+    if(!name || !url) return;
+    state[key].push({id:id(), icon:$("#m_icon").value.trim(), name, url: url.startsWith("http")?url:"https://"+url});
+    save(); renderLinks(key, elid); closeModal();
+  };
+}
+function addProgModal(){
+  openModal(`
+    <h3>＋ 新增追蹤項目</h3>
+    <label>項目名稱</label><input id="m_name" placeholder="例如:Dify 學習">
+    <div class="mrow"><button class="mcancel" onclick="closeModal()">取消</button><button class="mok" id="m_go">新增</button></div>
+  `);
+  $("#m_name").focus();
+  $("#m_go").onclick = ()=>{
+    const name=$("#m_name").value.trim(); if(!name) return;
+    state.progress.push({id:id(), name, pct:0});
+    save(); renderProg(); closeModal();
+  };
+}
+function openSettings(){
+  const g = state.gh || {repo:"",token:""};
+  openModal(`
+    <h3>⚙ GitHub 備份設定</h3>
+    <label>Repo(owner/repo)</label><input id="m_repo" value="${g.repo}" placeholder="Leonkhchen/leonboard">
+    <label>Fine-grained Token(只需此 repo 的 Contents 讀寫權限)</label><input id="m_token" type="password" value="${g.token}">
+    <div class="mnote">Token 產生:GitHub → Settings → Developer settings → Fine-grained tokens → 選 leonboard repo → Repository permissions → Contents: Read and write。<br>Token 只會加密存在這台瀏覽器,不會出現在網站程式碼或 repo 中。</div>
+    <div class="mrow"><button class="mcancel" onclick="closeModal()">取消</button><button class="mok" id="m_go">儲存</button></div>
+  `);
+  $("#m_go").onclick = ()=>{
+    state.gh = {repo:$("#m_repo").value.trim(), token:$("#m_token").value.trim()};
+    save(); closeModal(); msg("設定已儲存 ✓");
+  };
+}
+
+/* ================= wire up ================= */
+document.querySelectorAll(".tabs button").forEach(b=>{
+  b.onclick = ()=>{
+    document.querySelectorAll(".tabs button").forEach(x=>x.classList.remove("on"));
+    b.classList.add("on"); curCat = b.dataset.cat; renderTodos();
+  };
+});
+$("#todoadd").onclick = addTodo;
+$("#todoin").addEventListener("keydown", e=>{ if(e.key==="Enter") addTodo(); });
+$("#progadd").onclick = addProgModal;
+$("#appadd").onclick = ()=>addLinkModal("apps","applist","＋ 新增應用");
+$("#favadd").onclick = ()=>addLinkModal("favs","favlist","＋ 新增最愛");
+$("#backupbtn").onclick = ghBackup;
+$("#pullbtn").onclick = ghPull;
+$("#exportbtn").onclick = exportFile;
+$("#importbtn").onclick = importFile;
+$("#setbtn").onclick = openSettings;
+$("#lockbtn").onclick = lockNow;
+
+initLock();
+</script>
+</body>
+</html>
