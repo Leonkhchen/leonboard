@@ -1,0 +1,99 @@
+{
+  "schemaVersion": 1,
+  "updatedAt": "2026-09-14T14:28:00+08:00",
+  "updatedBy": "ChatGPT",
+  "statuses": ["idea", "planned", "active", "waiting", "verification", "migration", "done", "paused"],
+  "projects": [
+    {
+      "id": "milk-tea-pos",
+      "name": "Milk Tea POS",
+      "type": "new-development",
+      "status": "active",
+      "priority": "P0",
+      "repo": "Leonkhchen/milk-tea-pos",
+      "platform": "Cloudflare",
+      "primaryAgent": "OpenCode",
+      "reviewAgent": "ChatGPT",
+      "nextAction": "Continue current milestone through preview, verification, PR and production gate",
+      "notes": "Active Cloudflare POS project; keep PROJECT_COMPACT synchronized after major milestones."
+    },
+    {
+      "id": "junior-math",
+      "name": "Junior Math Interactive Learning",
+      "type": "new-development",
+      "status": "active",
+      "priority": "P1",
+      "repo": null,
+      "platform": "Cloudflare Workers + D1",
+      "primaryAgent": "OpenCode",
+      "reviewAgent": "ChatGPT",
+      "nextAction": "Finish 1-1 positive/negative numbers and number line, then establish repository and deployment workflow",
+      "notes": "Interactive junior-high math learning platform."
+    },
+    {
+      "id": "exam-cleaner",
+      "name": "Exam Paper Cleaner",
+      "type": "new-development",
+      "status": "planned",
+      "priority": "P1",
+      "repo": "Leonkhchen/exam-cleaner",
+      "platform": "Cloudflare + external AI/image processing as needed",
+      "primaryAgent": "OpenCode",
+      "reviewAgent": "ChatGPT / Google AI",
+      "nextAction": "Validate open-source and paid image-cleaning pipeline against real junior-high exam samples",
+      "notes": "Goal: remove student writing and regenerate printable test papers."
+    },
+    {
+      "id": "lifeflow-migration",
+      "name": "LifeFlow Cloudflare Migration",
+      "type": "migration",
+      "status": "migration",
+      "priority": "P2",
+      "repo": "Leonkhchen/lifeflow",
+      "platform": "Zeabur -> Cloudflare",
+      "primaryAgent": "OpenCode",
+      "reviewAgent": "ChatGPT",
+      "nextAction": "Perform migration assessment and identify runtime, storage and API blockers",
+      "notes": "Existing Zeabur application migration candidate."
+    },
+    {
+      "id": "web-mp3-player-migration",
+      "name": "Web MP3 Player Cloudflare Migration",
+      "type": "migration",
+      "status": "migration",
+      "priority": "P2",
+      "repo": "Leonkhchen/web-mp3-player",
+      "platform": "Zeabur -> Cloudflare",
+      "primaryAgent": "OpenCode",
+      "reviewAgent": "ChatGPT",
+      "nextAction": "Complete local-file playback version first; Google Drive integration is phase 2",
+      "notes": "Migration candidate with local-first playback requirement."
+    },
+    {
+      "id": "ai-life-keeper-migration",
+      "name": "AI Life Keeper Cloudflare Migration",
+      "type": "migration",
+      "status": "planned",
+      "priority": "P2",
+      "repo": "Leonkhchen/AIStudioLifeKeeper",
+      "platform": "AI Studio / Zeabur -> Cloudflare",
+      "primaryAgent": "OpenCode",
+      "reviewAgent": "ChatGPT / Google AI",
+      "nextAction": "Assess current architecture and Cloudflare compatibility before implementation",
+      "notes": "Existing application to evaluate for Cloudflare migration."
+    },
+    {
+      "id": "epub-tts-web",
+      "name": "EPUB TTS Web",
+      "type": "existing-development",
+      "status": "planned",
+      "priority": "P2",
+      "repo": "Leonkhchen/epub-tts-web",
+      "platform": "Web / Cloud",
+      "primaryAgent": "OpenCode",
+      "reviewAgent": "ChatGPT / Google AI",
+      "nextAction": "Consolidate translation, TTS provider and fallback architecture",
+      "notes": "Keep paid Gemini path, open-source path and Kaggle backup separated."
+    }
+  ]
+}
