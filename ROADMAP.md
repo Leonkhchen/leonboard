@@ -10,7 +10,7 @@ Status: complete
 - Cross-agent handoff convention
 
 ## Phase 2 — Cloudflare operational dashboard
-Status: implementation complete, provisioning pending
+Status: code complete, provisioning pending
 
 - Workers API
 - D1 schema
@@ -20,22 +20,39 @@ Status: implementation complete, provisioning pending
 - Codespaces / Dev Container
 - API write authorization via `SYNC_TOKEN`
 
-Pending:
+User/provisioning gate remaining:
 - Create `leonboard-db` in Cloudflare
 - Replace D1 `database_id`
 - Apply remote schema
-- Set `SYNC_TOKEN`
+- Set Worker `SYNC_TOKEN`
 - Deploy and validate production URL
 
 ## Phase 3 — GitHub synchronization
-Status: planned
+Status: implementation complete, credentials/endpoint pending
 
-- Import `projects.json` into D1
-- Read repo `PROJECT_COMPACT.md`
-- Sync open PR / Issue status
-- Capture deployment evidence
-- Detect stale project state
-- Never auto-overwrite GitHub state from D1
+Implemented:
+- Scheduled/manual GitHub Action every 6 hours
+- Import `projects.json` entries into LeonBoard API/D1
+- Inspect tracked repositories and open PR counts
+- Detect `docs/PROJECT_COMPACT.md` or root `PROJECT_COMPACT.md`
+- Record sync activity/errors in D1
+- Private-repository support through a fine-grained GitHub token
+- GitHub remains authoritative; sync does not overwrite GitHub from D1
+
+Activation gate:
+- Add GitHub Actions secrets `LEONBOARD_API_URL`, `LEONBOARD_SYNC_TOKEN`, `LEONBOARD_GITHUB_TOKEN`
+- Run the workflow manually once and inspect results
+
+## Phase 3A — Durable project compacts
+Status: in progress
+
+- Milk Tea POS: complete and detailed (`docs/PROJECT_COMPACT.md`)
+- Exam Cleaner: compact added
+- LifeFlow migration: compact added
+- Web MP3 Player migration: compact added
+- Junior Math: pending repository registration
+- AI Life Keeper: pending compact
+- EPUB TTS Web: pending compact refresh
 
 ## Phase 4 — Portfolio UX
 Status: planned
@@ -49,9 +66,10 @@ Status: planned
 - Search and filters
 
 ## Phase 5 — Agent automation
-Status: planned
+Status: partial foundation complete
 
-- Reusable OpenCode command for start/handoff
-- GitHub Action to validate compact schema
-- Optional scheduled sync from GitHub to D1
-- Alert when P0/P1 project is blocked or stale
+- Shared startup/handoff protocol exists
+- Scheduled GitHub synchronization exists
+- Remaining: reusable OpenCode start/handoff commands
+- Remaining: compact schema validator
+- Remaining: P0/P1 stale/block alerting
