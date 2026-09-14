@@ -1,0 +1,15 @@
+{
+  "name": "Leon Project Control Center",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:22",
+  "features": {
+    "ghcr.io/devcontainers/features/github-cli:1": {}
+  },
+  "postCreateCommand": "npm install -g @opencode/cli wrangler && npm install",
+  "forwardPorts": [8787],
+  "portsAttributes": {
+    "8787": {
+      "label": "LeonBoard Worker"
+    }
+  },
+  "remoteUser": "node"
+}
