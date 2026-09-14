@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "updatedAt": "2026-09-14T19:32:00+08:00",
+  "updatedAt": "2026-09-14T19:42:00+08:00",
   "updatedBy": "ChatGPT",
   "statuses": ["idea", "planned", "active", "waiting", "verification", "migration", "done", "paused"],
   "projects": [
@@ -86,12 +86,13 @@
       "status": "planned",
       "priority": "P2",
       "repo": "Leonkhchen/AIStudioLifeKeeper",
+      "compactPath": "PROJECT_COMPACT.md",
       "platform": "AI Studio / Zeabur -> Cloudflare",
       "primaryAgent": "OpenCode",
       "reviewAgent": "ChatGPT / Google AI",
       "progress": 5,
       "nextAction": "Assess current architecture and Cloudflare compatibility before implementation",
-      "notes": "Existing application to evaluate for Cloudflare migration."
+      "notes": "Compact added. Existing application to evaluate before implementation."
     },
     {
       "id": "epub-tts-web",
@@ -100,12 +101,13 @@
       "status": "planned",
       "priority": "P2",
       "repo": "Leonkhchen/epub-tts-web",
+      "compactPath": "PROJECT_COMPACT.md",
       "platform": "Web / Cloud",
       "primaryAgent": "OpenCode",
       "reviewAgent": "ChatGPT / Google AI",
       "progress": 20,
       "nextAction": "Consolidate translation, TTS provider and fallback architecture",
-      "notes": "Keep paid Gemini path, open-source path and Kaggle backup separated."
+      "notes": "Compact added. Keep paid Gemini path, open-source path and Kaggle backup separated."
     }
   ]
 }
