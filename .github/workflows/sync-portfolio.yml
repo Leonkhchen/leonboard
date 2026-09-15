@@ -12,14 +12,32 @@ jobs:
   sync:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    env:
+      LEONBOARD_API_URL: ${{ secrets.LEONBOARD_API_URL }}
+      LEONBOARD_SYNC_TOKEN: ${{ secrets.LEONBOARD_SYNC_TOKEN }}
+      LEONBOARD_GITHUB_TOKEN: ${{ secrets.LEONBOARD_GITHUB_TOKEN || github.token }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+
+      - name: Check sync configuration
+        id: preflight
+        shell: bash
+        run: |
+          if [[ -z "$LEONBOARD_API_URL" || -z "$LEONBOARD_SYNC_TOKEN" ]]; then
+            if [[ "$GITHUB_EVENT_NAME" == "workflow_dispatch" ]]; then
+              echo "::error::LeonBoard sync is not activated. Configure LEONBOARD_API_URL and LEONBOARD_SYNC_TOKEN in repository Actions secrets first."
+              exit 1
+            fi
+
+            echo "::warning::LeonBoard sync is not activated yet. Scheduled sync is skipped until LEONBOARD_API_URL and LEONBOARD_SYNC_TOKEN are configured."
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Sync GitHub state to LeonBoard D1
-        env:
-          LEONBOARD_API_URL: ${{ secrets.LEONBOARD_API_URL }}
-          LEONBOARD_SYNC_TOKEN: ${{ secrets.LEONBOARD_SYNC_TOKEN }}
-          LEONBOARD_GITHUB_TOKEN: ${{ secrets.LEONBOARD_GITHUB_TOKEN }}
+        if: steps.preflight.outputs.ready == 'true'
         run: node scripts/sync-github.mjs
