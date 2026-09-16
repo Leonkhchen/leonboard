@@ -79,3 +79,13 @@ A handoff is successful when a different agent can answer these questions withou
 4. What is blocked?
 5. What exact action should happen next?
 6. What must not be changed without Leon's approval?
+
+## Codespaces workflow
+
+- GitHub Codespaces is the preferred manual development/debug workstation when Leon is using an iPad or does not want to rely on the local Windows PC.
+- Cloud Codex remains the preferred implementation agent for larger multi-file repository changes, refactors, full test runs and PR preparation.
+- ChatGPT / ChatGPT Work remain responsible for planning, review and browser-based verification where appropriate.
+- A Codespace must not bypass the repository PR / CI/CD flow. Production deployment remains GitHub Actions only.
+- Remote D1 schema migration must not run automatically from Codespaces or as part of normal production deployment.
+- Never commit Codespaces secrets, provider API keys, Cloudflare tokens, GitHub PATs or other credentials.
+- Use the repository-managed Wrangler dependency instead of introducing an unrelated global Wrangler version.
