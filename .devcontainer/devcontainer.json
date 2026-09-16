@@ -1,14 +1,25 @@
 {
-  "name": "Leon Project Control Center",
-  "image": "mcr.microsoft.com/devcontainers/javascript-node:22",
+  "name": "LeonBoard Cloud Dev",
+  "image": "mcr.microsoft.com/devcontainers/typescript-node:22-bookworm",
   "features": {
     "ghcr.io/devcontainers/features/github-cli:1": {}
   },
-  "postCreateCommand": "npm install -g @opencode/cli wrangler && npm install",
+  "postCreateCommand": "sudo apt-get update && sudo apt-get install -y curl jq sqlite3 && npm ci && npm install -g opencode-ai",
   "forwardPorts": [8787],
   "portsAttributes": {
     "8787": {
-      "label": "LeonBoard Worker"
+      "label": "Cloudflare Worker Dev",
+      "onAutoForward": "openPreview",
+      "visibility": "private"
+    }
+  },
+  "hostRequirements": {
+    "cpus": 2,
+    "memory": "4gb"
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": []
     }
   },
   "remoteUser": "node"
